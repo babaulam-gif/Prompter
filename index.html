@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Prompt Template Builder</title>
+<style>
+  :root {
+    --bg: #f7f5f0;
+    --surface: #ffffff;
+    --surface2: #f0ede6;
+    --ink: #1a1814;
+    --muted: #7a7570;
+    --dim: #a09a94;
+    --border: #ddd9d0;
+    --border2: #c8c2b8;
+
+    --role:   #c0392b;
+    --task:   #d4572a;
+    --ctx:    #2980b9;
+    --input:  #27ae60;
+    --const:  #8e44ad;
+    --fmt:    #e67e22;
+
+    --role-bg:  #fdf0ef;
+    --task-bg:  #fef5f0;
+    --ctx-bg:   #eef5fc;
+    --input-bg: #eefaf3;
+    --const-bg: #f5effe;
+    --fmt-bg:   #fef9ee;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--ink);
+    color: #f0ece4;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 36px 40px 32px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: 40%;
+    background: linear-gradient(135deg, transparent, rgba(255,255,255,0.03));
+    pointer-events: none;
+  }
+  .header-tag {
+    font-family: 'Courier New', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #7a7570;
+    margin-bottom: 10px;
+  }
+  header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    margin-bottom: 10px;
+  }
+  header h1 .accent { color: #f7a07a; }
+  .header-desc {
+    font-size: 0.9rem;
+    color: #a09a94;
+    max-width: 500px;
+    line-height: 1.65;
+  }
+  .header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+  }
+  .component-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+  .ctag {
+    font-family: 'Courier New', monospace;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 3px;
+    border: 1px solid;
+  }
+  .ct1 { border-color: #c0392b; color: #c0392b; background: rgba(192,57,43,0.12); }
+  .ct2 { border-color: #d4572a; color: #d4572a; background: rgba(212,87,42,0.12); }
+  .ct3 { border-color: #2980b9; color: #2980b9; background: rgba(41,128,185,0.12); }
+  .ct4 { border-color: #27ae60; color: #27ae60; background: rgba(39,174,96,0.12); }
+  .ct5 { border-color: #8e44ad; color: #8e44ad; background: rgba(142,68,173,0.12); }
+  .ct6 { border-color: #e67e22; color: #e67e22; background: rgba(230,126,34,0.12); }
+
+  .template-preview-strip {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.72rem;
+    color: #7a7570;
+    line-height: 1.9;
+    max-width: 320px;
+  }
+  .tps-r { color: #e07070; }
+  .tps-t { color: #f0a07a; }
+  .tps-c { color: #7ab8f7; }
+  .tps-i { color: #7af0b0; }
+  .tps-k { color: #c47af0; }
+  .tps-f { color: #f0c87a; }
+
+  /* ── MAIN LAYOUT ── */
+  .main-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  /* ── FRAMEWORK EXPLAINER ── */
+  .fw-section {
+    margin-bottom: 28px;
+  }
+  .section-label {
+    font-family: 'Courier New', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--ink);
+  }
+  .fw-cards {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+  }
+  @media (max-width: 900px) { .fw-cards { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 560px) { .fw-cards { grid-template-columns: repeat(2, 1fr); } }
+
+  .fw-card {
+    border-radius: 10px;
+    padding: 14px 13px;
+    border: 1.5px solid;
+    position: relative;
+  }
+  .fw-card.fc1 { background: var(--role-bg);  border-color: rgba(192,57,43,0.25); }
+  .fw-card.fc2 { background: var(--task-bg);  border-color: rgba(212,87,42,0.25); }
+  .fw-card.fc3 { background: var(--ctx-bg);   border-color: rgba(41,128,185,0.25); }
+  .fw-card.fc4 { background: var(--input-bg); border-color: rgba(39,174,96,0.25); }
+  .fw-card.fc5 { background: var(--const-bg); border-color: rgba(142,68,173,0.25); }
+  .fw-card.fc6 { background: var(--fmt-bg);   border-color: rgba(230,126,34,0.25); }
+
+  .fw-num {
+    font-family: 'Courier New', monospace;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    margin-bottom: 5px;
+    opacity: 0.6;
+  }
+  .fc1 .fw-num { color: var(--role); }
+  .fc2 .fw-num { color: var(--task); }
+  .fc3 .fw-num { color: var(--ctx); }
+  .fc4 .fw-num { color: var(--input); }
+  .fc5 .fw-num { color: var(--const); }
+  .fc6 .fw-num { color: var(--fmt); }
+
+  .fw-name {
+    font-size: 0.82rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+  }
+  .fc1 .fw-name { color: var(--role); }
+  .fc2 .fw-name { color: var(--task); }
+  .fc3 .fw-name { color: var(--ctx); }
+  .fc4 .fw-name { color: var(--input); }
+  .fc5 .fw-name { color: var(--const); }
+  .fc6 .fw-name { color: var(--fmt); }
+
+  .fw-what { font-size: 0.74rem; color: #555; line-height: 1.5; margin-bottom: 6px; }
+  .fw-eg {
+    font-family: 'Courier New', monospace;
+    font-size: 0.66rem;
+    color: var(--muted);
+    font-style: italic;
+    line-height: 1.4;
+    padding: 4px 6px;
+    background: rgba(0,0,0,0.04);
+    border-radius: 4px;
+  }
+
+  /* ── TWO-COL LAYOUT ── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 20px;
+    align-items: start;
+  }
+  @media (max-width: 800px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 26px;
+    margin-bottom: 20px;
+  }
+  .card-label {
+    font-family: 'Courier New', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* ── FIELD ── */
+  .field { margin-bottom: 0; }
+  .field + .field { margin-top: 16px; }
+
+  .field-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+    flex-wrap: wrap;
+  }
+  .ftag {
+    font-family: 'Courier New', monospace;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 3px;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+  .ft1 { border-color: var(--role);  color: var(--role);  background: var(--role-bg); }
+  .ft2 { border-color: var(--task);  color: var(--task);  background: var(--task-bg); }
+  .ft3 { border-color: var(--ctx);   color: var(--ctx);   background: var(--ctx-bg); }
+  .ft4 { border-color: var(--input); color: var(--input); background: var(--input-bg); }
+  .ft5 { border-color: var(--const); color: var(--const); background: var(--const-bg); }
+  .ft6 { border-color: var(--fmt);   color: var(--fmt);   background: var(--fmt-bg); }
+
+  .field-name { font-size: 0.85rem; font-weight: 700; color: var(--ink); }
+  .field-hint { font-size: 0.73rem; color: var(--muted); margin-bottom: 7px; font-style: italic; }
+
+  select, input[type="text"], textarea {
+    width: 100%;
+    font-family: 'Georgia', serif;
+    font-size: 0.87rem;
+    padding: 9px 12px;
+    background: var(--bg);
+    border: 1.5px solid var(--border2);
+    border-radius: 7px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  select option { background: var(--surface); }
+  textarea { resize: vertical; min-height: 78px; line-height: 1.6; }
+  select:focus, input:focus, textarea:focus { border-color: #555; }
+
+  .sub-input { margin-top: 7px; }
+
+  .divider { border: none; border-top: 1.5px dashed var(--border); margin: 18px 0; }
+
+  /* ── FILL-IN TEMPLATE BOX ── */
+  .fib-box {
+    background: var(--ink);
+    color: #e8e4f8;
+    border-radius: 10px;
+    padding: 18px 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    line-height: 2;
+    margin-bottom: 18px;
+  }
+  .fib-box .fib-label { color: #7a7570; font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; display: block; margin-bottom: 8px; }
+  .fib-r { color: #f08080; }
+  .fib-t { color: #f0b080; }
+  .fib-c { color: #80c8f0; }
+  .fib-i { color: #80f0b0; }
+  .fib-k { color: #c880f0; }
+  .fib-f { color: #f0d880; }
+  .fib-key { color: #888; font-style: italic; }
+
+  /* ── BUTTONS ── */
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+  button {
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 11px 24px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  button.primary { background: var(--ink); color: #f0ece4; }
+  button.primary:hover { background: #333; }
+  button.secondary { background: transparent; border: 1.5px solid var(--border2); color: var(--muted); }
+  button.secondary:hover { color: var(--ink); border-color: var(--ink); }
+  button.ghost { background: transparent; border: 1.5px solid var(--border2); color: var(--muted); padding: 8px 16px; font-size: 0.7rem; }
+  button.ghost:hover { color: var(--ink); border-color: var(--ink); }
+
+  /* ── SCENARIOS ── */
+  .scenario-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  @media (max-width: 500px) { .scenario-grid { grid-template-columns: 1fr; } }
+
+  .sc-btn {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 11px 13px;
+    cursor: pointer;
+    transition: all 0.12s;
+    text-align: left;
+  }
+  .sc-btn:hover { border-color: var(--border2); background: var(--surface); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .sc-num {
+    font-family: 'Courier New', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .sc-name {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .sc-who {
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  /* ── OUTPUT ── */
+  #output-section { display: none; margin-top: 24px; }
+  #output-section.visible { display: block; }
+
+  .output-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 26px 28px;
+  }
+
+  .prompt-block {
+    background: var(--ink);
+    border-radius: 10px;
+    padding: 24px 26px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.84rem;
+    line-height: 2;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: #ccc8e0;
+  }
+  .out-r { color: #f08080; font-weight: 700; }
+  .out-t { color: #f0b080; font-weight: 700; }
+  .out-c { color: #80c8f0; font-weight: 700; }
+  .out-i { color: #80f0b0; font-weight: 700; }
+  .out-k { color: #c880f0; font-weight: 700; }
+  .out-f { color: #f0d880; font-weight: 700; }
+  .out-lbl { color: #555; font-size: 0.7rem; letter-spacing: 0.1em; }
+
+  /* ── SCORE BARS ── */
+  .scores {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px 20px;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+  }
+  @media (max-width: 600px) { .scores { grid-template-columns: repeat(2, 1fr); } }
+  .s-row { display: flex; justify-content: space-between; font-family: 'Courier New', monospace; font-size: 0.68rem; color: var(--muted); margin-bottom: 4px; }
+  .s-bg { height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .s-fill { height: 100%; border-radius: 3px; transition: width 0.7s ease; }
+  .sf1 { background: var(--role); }
+  .sf2 { background: var(--task); }
+  .sf3 { background: var(--ctx); }
+  .sf4 { background: var(--input); }
+  .sf5 { background: var(--const); }
+  .sf6 { background: var(--fmt); }
+
+  /* ── COPY / ACTIONS ── */
+  .actions-row { display: flex; align-items: center; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  .copy-msg { font-family: 'Courier New', monospace; font-size: 0.72rem; color: var(--input); opacity: 0; transition: opacity 0.3s; }
+  .copy-msg.show { opacity: 1; }
+
+  /* ── TIP ── */
+  #improve-tip {
+    display: none;
+    margin-top: 14px;
+    padding: 13px 16px;
+    background: var(--surface2);
+    border-radius: 8px;
+    font-size: 0.82rem;
+    color: #444;
+    line-height: 1.65;
+    border-left: 3px solid var(--ctx);
+    font-style: italic;
+  }
+
+  /* ── STRENGTH BADGE ── */
+  .strength-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-top: 12px;
+  }
+  .sb-weak   { background: #fde8de; color: var(--task); border: 1px solid rgba(212,87,42,0.3); }
+  .sb-good   { background: #eef5fc; color: var(--ctx);  border: 1px solid rgba(41,128,185,0.3); }
+  .sb-strong { background: var(--input-bg); color: var(--input); border: 1px solid rgba(39,174,96,0.3); }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="header-inner">
+    <div>
+      <div class="header-tag">Advanced Prompt Design &nbsp;/&nbsp; General Public Edition</div>
+      <h1>Prompt <span class="accent">Template</span><br>Builder</h1>
+      <div class="header-desc">A structured 6-component framework to craft precise, repeatable AI prompts — for any task, any tool, any person.</div>
+    </div>
+    <div class="header-right">
+      <div class="component-tags">
+        <span class="ctag ct1">Role</span>
+        <span class="ctag ct2">Task</span>
+        <span class="ctag ct3">Context</span>
+        <span class="ctag ct4">Input</span>
+        <span class="ctag ct5">Constraint</span>
+        <span class="ctag ct6">Format</span>
+      </div>
+      <div class="template-preview-strip">
+<span class="tps-r">Role:</span> You are a {professional_role}.
+<span class="tps-t">Task:</span> Your goal is to {action}.
+<span class="tps-c">Context:</span> Here is the background: {info}.
+<span class="tps-i">Input:</span> {content_to_process}
+<span class="tps-k">Constraint:</span> Ensure it is {tone/length}.
+<span class="tps-f">Format:</span> Present as a {format_type}.</div>
+    </div>
+  </div>
+</header>
+
+<div class="main-wrap">
+
+  <!-- ── FRAMEWORK ── -->
+  <div class="fw-section">
+    <div class="section-label">The Framework</div>
+    <div class="section-title">6 Components of a Professional Prompt</div>
+    <div class="fw-cards">
+
+      <div class="fw-card fc1">
+        <div class="fw-num">01 &mdash; ROLE</div>
+        <div class="fw-name">Role / Persona</div>
+        <div class="fw-what">Who should the AI act as? A persona shapes expertise, tone, and depth.</div>
+        <div class="fw-eg">"Act as a senior financial advisor..."</div>
+      </div>
+
+      <div class="fw-card fc2">
+        <div class="fw-num">02 &mdash; TASK</div>
+        <div class="fw-name">Task / Instruction</div>
+        <div class="fw-what">The specific action. What exactly should the AI do with your input?</div>
+        <div class="fw-eg">"Summarise", "Translate", "Draft", "Analyse"</div>
+      </div>
+
+      <div class="fw-card fc3">
+        <div class="fw-num">03 &mdash; CONTEXT</div>
+        <div class="fw-name">Context</div>
+        <div class="fw-what">Background the AI needs — audience, purpose, situation, or constraints.</div>
+        <div class="fw-eg">"The audience is beginners with no prior knowledge..."</div>
+      </div>
+
+      <div class="fw-card fc4">
+        <div class="fw-num">04 &mdash; INPUT</div>
+        <div class="fw-name">Input Data</div>
+        <div class="fw-what">The actual content to process — or a placeholder for reusable templates.</div>
+        <div class="fw-eg">"Text: [Paste your article here]"</div>
+      </div>
+
+      <div class="fw-card fc5">
+        <div class="fw-num">05 &mdash; CONSTRAINT</div>
+        <div class="fw-name">Constraint</div>
+        <div class="fw-what">Boundaries and requirements — tone, length, language, style, or limits.</div>
+        <div class="fw-eg">"Keep under 150 words. Avoid jargon. Be direct."</div>
+      </div>
+
+      <div class="fw-card fc6">
+        <div class="fw-num">06 &mdash; FORMAT</div>
+        <div class="fw-name">Output Format</div>
+        <div class="fw-what">How the response should be structured, styled, or presented.</div>
+        <div class="fw-eg">"Bullet list", "3 paragraphs", "Table", "JSON"</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── FILL-IN TEMPLATE ── -->
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-label">Reference Template</div>
+    <div class="card-title">The Fill-in-the-Blank Structure</div>
+    <div class="fib-box">
+      <span class="fib-label">Copy this structure and fill in the blanks for any task</span><span class="fib-r">Role:</span> You are a <span class="fib-key">{professional_role}</span>.
+<span class="fib-t">Task:</span> Your goal is to <span class="fib-key">{action_to_perform}</span>.
+<span class="fib-c">Context:</span> Here is the information you need to work with: <span class="fib-key">{background_information}</span>.
+<span class="fib-i">Input:</span> <span class="fib-key">{content_to_process}</span>
+<span class="fib-k">Constraint:</span> Please ensure the response is <span class="fib-key">{tone_and_length_requirement}</span>.
+<span class="fib-f">Format:</span> Present your final answer as a <span class="fib-key">{format_type}</span>.</div>
+  </div>
+
+  <div class="two-col">
+
+    <!-- ── LEFT: BUILDER ── -->
+    <div>
+      <div class="card">
+        <div class="card-label">Step 1 — Build</div>
+        <div class="card-title">Complete Your Prompt Template</div>
+
+        <!-- ROLE -->
+        <div class="field">
+          <div class="field-header">
+            <span class="ftag ft1">01 &mdash; Role</span>
+            <span class="field-name">Who is the AI acting as?</span>
+          </div>
+          <div class="field-hint">Optional but powerful — sets expertise, voice, and perspective</div>
+          <select id="role-select">
+            <option value="">— No specific role (general AI) —</option>
+            <option value="You are an experienced teacher who explains complex topics simply">Experienced Teacher</option>
+            <option value="You are a professional business writer with 10 years of corporate experience">Professional Business Writer</option>
+            <option value="You are a senior marketing strategist specialising in digital campaigns">Senior Marketing Strategist</option>
+            <option value="You are a friendly and empathetic customer service specialist">Customer Service Specialist</option>
+            <option value="You are an expert data analyst who communicates insights clearly">Expert Data Analyst</option>
+            <option value="You are a creative copywriter who crafts compelling, concise content">Creative Copywriter</option>
+            <option value="You are a professional career coach helping people navigate workplace challenges">Career Coach</option>
+            <option value="You are a financial advisor who explains money topics in plain language">Financial Advisor (Plain Language)</option>
+            <option value="You are a health and wellness expert who gives evidence-based advice">Health & Wellness Expert</option>
+            <option value="You are a legal advisor who translates complex legal language into plain English">Legal Advisor (Plain English)</option>
+            <option value="You are an experienced project manager who values clear communication">Project Manager</option>
+            <option value="You are a friendly tutor helping students understand difficult subjects">Student Tutor</option>
+          </select>
+          <input type="text" class="sub-input" id="role-custom" placeholder="Or describe a custom role..." />
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- TASK -->
+        <div class="field">
+          <div class="field-header">
+            <span class="ftag ft2">02 &mdash; Task</span>
+            <span class="field-name">What should the AI do?</span>
+          </div>
+          <div class="field-hint">Choose a verb, then describe the subject or topic</div>
+          <select id="task-select">
+            <option value="">— Choose a task verb —</option>
+            <option value="Summarise">Summarise</option>
+            <option value="Write">Write</option>
+            <option value="Rewrite and improve">Rewrite &amp; Improve</option>
+            <option value="Translate">Translate</option>
+            <option value="Draft">Draft</option>
+            <option value="Explain">Explain</option>
+            <option value="Analyse">Analyse</option>
+            <option value="Create an outline for">Create an Outline for</option>
+            <option value="Compare and contrast">Compare &amp; Contrast</option>
+            <option value="Generate ideas for">Generate Ideas for</option>
+            <option value="Proofread and correct">Proofread and Correct</option>
+            <option value="Simplify">Simplify</option>
+            <option value="Respond to">Respond to</option>
+            <option value="Plan">Plan</option>
+          </select>
+          <input type="text" class="sub-input" id="task-topic" placeholder="...the following / about (describe the subject)" />
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- CONTEXT -->
+        <div class="field">
+          <div class="field-header">
+            <span class="ftag ft3">03 &mdash; Context</span>
+            <span class="field-name">What background does the AI need?</span>
+          </div>
+          <div class="field-hint">Audience type, purpose, situation — the more specific, the better</div>
+          <select id="ctx-audience">
+            <option value="">— Who is the audience? —</option>
+            <option value="The audience is complete beginners with no prior knowledge of this topic">Complete beginners</option>
+            <option value="The audience is working professionals in a corporate environment">Working professionals</option>
+            <option value="The audience is senior executives who need concise, decision-ready information">Senior executives</option>
+            <option value="The audience is students preparing for an exam or assessment">Students</option>
+            <option value="The audience is the general public with mixed levels of knowledge">General public</option>
+            <option value="The audience is technical experts who understand industry terminology">Technical experts</option>
+            <option value="The audience is small business owners with limited resources">Small business owners</option>
+            <option value="The audience is parents looking for practical, easy-to-apply advice">Parents</option>
+          </select>
+          <input type="text" class="sub-input" id="ctx-purpose" placeholder="Purpose or situation (e.g. for a presentation, to send via email...)" />
+          <input type="text" class="sub-input" style="margin-top:7px;" id="ctx-extra" placeholder="Any other background the AI should know..." />
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- INPUT DATA -->
+        <div class="field">
+          <div class="field-header">
+            <span class="ftag ft4">04 &mdash; Input</span>
+            <span class="field-name">What content should be processed?</span>
+          </div>
+          <div class="field-hint">Paste real content, or use a placeholder like [Text] for a reusable template</div>
+          <textarea id="input-data" placeholder="Examples:&#10;Text: [Paste your article here]&#10;Topic: The impact of social media on mental health&#10;Email: [Paste the email you received]&#10;Data: [Paste your dataset or describe it]"></textarea>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- CONSTRAINT -->
+        <div class="field">
+          <div class="field-header">
+            <span class="ftag ft5">05 &mdash; Constraint</span>
+            <span class="field-name">What limits or requirements apply?</span>
+          </div>
+          <div class="field-hint">Tone, length, language, style — what must the AI respect?</div>
+          <select id="constraint-tone">
+            <option value="">— Choose a tone —</option>
+            <option value="professional and formal">Professional &amp; Formal</option>
+            <option value="friendly and conversational">Friendly &amp; Conversational</option>
+            <option value="simple and easy to understand">Simple &amp; Easy to Understand</option>
+            <option value="concise and direct">Concise &amp; Direct</option>
+            <option value="empathetic and supportive">Empathetic &amp; Supportive</option>
+            <option value="confident and persuasive">Confident &amp; Persuasive</option>
+            <option value="neutral and objective">Neutral &amp; Objective</option>
+            <option value="creative and engaging">Creative &amp; Engaging</option>
+          </select>
+          <select class="sub-input" id="constraint-length">
+            <option value="">— Choose a length —</option>
+            <option value="under 50 words">Very short (under 50 words)</option>
+            <option value="under 100 words">Short (under 100 words)</option>
+            <option value="under 200 words">Medium (under 200 words)</option>
+            <option value="under 400 words">Detailed (under 400 words)</option>
+            <option value="as long as needed to be thorough">Thorough — as long as needed</option>
+          </select>
+          <input type="text" class="sub-input" id="constraint-extra" placeholder="Any other constraints (e.g. no jargon, no bullet points, in English only...)" />
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- FORMAT -->
+        <div class="field">
+          <div class="field-header">
+            <span class="ftag ft6">06 &mdash; Format</span>
+            <span class="field-name">How should the response be structured?</span>
+          </div>
+          <div class="field-hint">The clearer the format, the more usable the output</div>
+          <select id="format-select">
+            <option value="">— Choose an output format —</option>
+            <option value="a bulleted list">Bulleted list</option>
+            <option value="a numbered step-by-step list">Numbered step-by-step list</option>
+            <option value="3 short, clear paragraphs">3 short paragraphs</option>
+            <option value="a structured table with clear column headings">Table with headings</option>
+            <option value="a professional email with subject line, body, and sign-off">Professional email</option>
+            <option value="a Q&A format with questions and answers">Q&amp;A format</option>
+            <option value="a summary followed by 3 to 5 key takeaways">Summary + Key Takeaways</option>
+            <option value="a single concise paragraph">Single concise paragraph</option>
+            <option value="a structured report with headings and sub-sections">Structured report</option>
+            <option value="a pros and cons table">Pros &amp; Cons table</option>
+            <option value="JSON format">JSON format</option>
+            <option value="a simple analogy followed by an explanation">Analogy + Explanation</option>
+          </select>
+          <input type="text" class="sub-input" id="format-extra" placeholder="Any additional formatting notes..." />
+        </div>
+
+        <div class="btn-row">
+          <button class="primary" onclick="buildPrompt()">&#9654;&nbsp; Generate Prompt</button>
+          <button class="secondary" onclick="clearAll()">Clear All</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RIGHT: SCENARIOS ── -->
+    <div>
+      <div class="card">
+        <div class="card-label">Quick Start</div>
+        <div class="card-title">8 Ready-to-Use Scenarios</div>
+        <div class="scenario-grid" id="scenario-grid"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── OUTPUT ── -->
+  <div id="output-section">
+    <div class="output-card">
+      <div class="card-label">Your Generated Prompt</div>
+      <div class="card-title">Ready to Copy &amp; Use in Any AI Tool</div>
+
+      <div class="prompt-block" id="prompt-output"></div>
+
+      <div id="strength-badge"></div>
+
+      <div class="scores">
+        <div><div class="s-row"><span>Role</span><span id="pct1">-</span></div><div class="s-bg"><div class="s-fill sf1" id="b1" style="width:0%"></div></div></div>
+        <div><div class="s-row"><span>Task</span><span id="pct2">-</span></div><div class="s-bg"><div class="s-fill sf2" id="b2" style="width:0%"></div></div></div>
+        <div><div class="s-row"><span>Context</span><span id="pct3">-</span></div><div class="s-bg"><div class="s-fill sf3" id="b3" style="width:0%"></div></div></div>
+        <div><div class="s-row"><span>Input Data</span><span id="pct4">-</span></div><div class="s-bg"><div class="s-fill sf4" id="b4" style="width:0%"></div></div></div>
+        <div><div class="s-row"><span>Constraint</span><span id="pct5">-</span></div><div class="s-bg"><div class="s-fill sf5" id="b5" style="width:0%"></div></div></div>
+        <div><div class="s-row"><span>Format</span><span id="pct6">-</span></div><div class="s-bg"><div class="s-fill sf6" id="b6" style="width:0%"></div></div></div>
+      </div>
+
+      <div class="actions-row">
+        <button class="ghost" onclick="copyPrompt()">&#10064;&nbsp; Copy Prompt</button>
+        <button class="ghost" onclick="showTip()">&#10022;&nbsp; Improve Tip</button>
+        <span class="copy-msg" id="copy-msg">&#10003; Copied!</span>
+      </div>
+
+      <div id="improve-tip"></div>
+    </div>
+  </div>
+
+</div><!-- end main-wrap -->
+
+<script>
+var scenarios = [
+  {
+    who: "Student", label: "Study & Revision",
+    role: "You are a friendly tutor helping students understand difficult subjects",
+    roleCustom: "",
+    task: "Explain", topic: "the causes and consequences of climate change",
+    audience: "The audience is students preparing for an exam or assessment",
+    purpose: "to help me revise and remember the key points",
+    extra: "Use real-world examples to make it memorable",
+    input: "Topic: The causes and consequences of climate change",
+    tone: "simple and easy to understand",
+    length: "under 200 words",
+    constraintExtra: "No complex scientific jargon",
+    format: "a summary followed by 3 to 5 key takeaways",
+    formatExtra: "End with a one-sentence memory tip"
+  },
+  {
+    who: "Professional", label: "Email Writing",
+    role: "You are a professional business writer with 10 years of corporate experience",
+    roleCustom: "",
+    task: "Draft", topic: "a follow-up email after a job interview",
+    audience: "The audience is working professionals in a corporate environment",
+    purpose: "to leave a positive impression and reinforce my interest in the role",
+    extra: "The interview was for a marketing manager position at a tech company",
+    input: "Interview details: [Describe your interview briefly here]",
+    tone: "professional and formal",
+    length: "under 200 words",
+    constraintExtra: "Include a clear subject line and a call to action",
+    format: "a professional email with subject line, body, and sign-off",
+    formatExtra: ""
+  },
+  {
+    who: "Parent", label: "Parenting Advice",
+    role: "You are a friendly and empathetic customer service specialist",
+    roleCustom: "You are a child development expert and parenting coach",
+    task: "Write", topic: "practical tips for reducing screen time for children aged 6 to 12",
+    audience: "The audience is parents looking for practical, easy-to-apply advice",
+    purpose: "to get actionable ideas I can start using this week",
+    extra: "Focus on positive replacement activities, not just restrictions",
+    input: "Topic: Reducing screen time for children aged 6-12",
+    tone: "friendly and conversational",
+    length: "under 400 words",
+    constraintExtra: "Avoid guilt-inducing language",
+    format: "a numbered step-by-step list",
+    formatExtra: "Include a short reason after each tip"
+  },
+  {
+    who: "Small Business", label: "Marketing Copy",
+    role: "You are a creative copywriter who crafts compelling, concise content",
+    roleCustom: "",
+    task: "Write", topic: "a short social media post to promote a new product launch",
+    audience: "The audience is general public with mixed levels of knowledge",
+    purpose: "to drive excitement and clicks on Instagram and Facebook",
+    extra: "The product is a reusable eco-friendly water bottle for busy people",
+    input: "Product: [Describe your product here]",
+    tone: "creative and engaging",
+    length: "under 100 words",
+    constraintExtra: "Include a call to action and 3 relevant hashtags",
+    format: "a single concise paragraph",
+    formatExtra: "End with emojis that match the brand tone"
+  },
+  {
+    who: "Anyone", label: "Understanding a Topic",
+    role: "You are an experienced teacher who explains complex topics simply",
+    roleCustom: "",
+    task: "Explain", topic: "how compound interest works and why it matters",
+    audience: "The audience is complete beginners with no prior knowledge of this topic",
+    purpose: "so I can make smarter financial decisions in everyday life",
+    extra: "Use a simple story or analogy to illustrate the concept",
+    input: "Topic: How compound interest works",
+    tone: "simple and easy to understand",
+    length: "under 200 words",
+    constraintExtra: "No maths formulas — use plain language only",
+    format: "a simple analogy followed by an explanation",
+    formatExtra: "Finish with one practical tip I can apply today"
+  },
+  {
+    who: "Manager", label: "Meeting Summary",
+    role: "You are an experienced project manager who values clear communication",
+    roleCustom: "",
+    task: "Summarise", topic: "the key points, decisions, and action items from a meeting",
+    audience: "The audience is working professionals in a corporate environment",
+    purpose: "to share a clear record with the team after the meeting",
+    extra: "Focus on decisions made and who is responsible for each action",
+    input: "Meeting notes: [Paste your raw meeting notes here]",
+    tone: "concise and direct",
+    length: "under 200 words",
+    constraintExtra: "Group by: Decisions, Action Items, Next Steps",
+    format: "a structured report with headings and sub-sections",
+    formatExtra: "Each action item must include a responsible person and deadline"
+  },
+  {
+    who: "Job Seeker", label: "CV & Career Help",
+    role: "You are a professional career coach helping people navigate workplace challenges",
+    roleCustom: "",
+    task: "Rewrite and improve", topic: "my professional summary for a CV",
+    audience: "The audience is senior executives who need concise, decision-ready information",
+    purpose: "to make a strong first impression on hiring managers in the tech industry",
+    extra: "Emphasise leadership, problem-solving, and impact over job duties",
+    input: "My current summary: [Paste your CV summary here]",
+    tone: "confident and persuasive",
+    length: "under 100 words",
+    constraintExtra: "Start with a strong action word, avoid clichés like 'passionate' or 'hardworking'",
+    format: "a single concise paragraph",
+    formatExtra: ""
+  },
+  {
+    who: "Researcher", label: "Compare & Decide",
+    role: "You are a financial advisor who explains money topics in plain language",
+    roleCustom: "",
+    task: "Compare and contrast", topic: "renting vs buying a home for a first-time buyer",
+    audience: "The audience is complete beginners with no prior knowledge of this topic",
+    purpose: "to help me decide which option makes more financial sense for my situation",
+    extra: "Consider both short-term affordability and long-term financial impact",
+    input: "My situation: [Describe your financial situation briefly]",
+    tone: "neutral and objective",
+    length: "under 400 words",
+    constraintExtra: "Present both sides fairly — no strong recommendation unless clearly justified",
+    format: "a pros and cons table",
+    formatExtra: "Add a short written conclusion after the table"
+  }
+];
+
+// Render scenario buttons
+(function() {
+  var grid = document.getElementById('scenario-grid');
+  scenarios.forEach(function(s, i) {
+    var btn = document.createElement('div');
+    btn.className = 'sc-btn';
+    btn.innerHTML = '<div class="sc-num">Scenario 0' + (i+1) + '</div>' +
+      '<div class="sc-name">' + s.label + '</div>' +
+      '<div class="sc-who">For: ' + s.who + '</div>';
+    btn.onclick = function() { loadScenario(i); };
+    grid.appendChild(btn);
+  });
+})();
+
+function loadScenario(i) {
+  var s = scenarios[i];
+  document.getElementById('role-select').value = s.role;
+  document.getElementById('role-custom').value = s.roleCustom;
+  document.getElementById('task-select').value = s.task;
+  document.getElementById('task-topic').value = s.topic;
+  document.getElementById('ctx-audience').value = s.audience;
+  document.getElementById('ctx-purpose').value = s.purpose;
+  document.getElementById('ctx-extra').value = s.extra;
+  document.getElementById('input-data').value = s.input;
+  document.getElementById('constraint-tone').value = s.tone;
+  document.getElementById('constraint-length').value = s.length;
+  document.getElementById('constraint-extra').value = s.constraintExtra;
+  document.getElementById('format-select').value = s.format;
+  document.getElementById('format-extra').value = s.formatExtra;
+  buildPrompt();
+  setTimeout(function() {
+    document.getElementById('output-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 150);
+}
+
+function buildPrompt() {
+  var rolePreset  = document.getElementById('role-select').value;
+  var roleCustom  = document.getElementById('role-custom').value.trim();
+  var taskVerb    = document.getElementById('task-select').value;
+  var taskTopic   = document.getElementById('task-topic').value.trim();
+  var ctxAud      = document.getElementById('ctx-audience').value;
+  var ctxPurpose  = document.getElementById('ctx-purpose').value.trim();
+  var ctxExtra    = document.getElementById('ctx-extra').value.trim();
+  var inputData   = document.getElementById('input-data').value.trim();
+  var conTone     = document.getElementById('constraint-tone').value;
+  var conLength   = document.getElementById('constraint-length').value;
+  var conExtra    = document.getElementById('constraint-extra').value.trim();
+  var fmtSelect   = document.getElementById('format-select').value;
+  var fmtExtra    = document.getElementById('format-extra').value.trim();
+
+  var role = roleCustom || rolePreset;
+  var task = [taskVerb, taskTopic].filter(Boolean).join(' ');
+  var ctxParts = [ctxAud, ctxPurpose, ctxExtra].filter(Boolean).join('. ');
+  var conParts = [conTone, conLength, conExtra].filter(Boolean).join('. ');
+  var fmtParts = [fmtSelect, fmtExtra].filter(Boolean).join('. ');
+
+  if (!task) { alert('Please select or enter a Task / Instruction.'); return; }
+
+  // Plain text
+  var lines = [];
+  if (role)     lines.push('Role: ' + role + '.');
+  if (task)     lines.push('Task: Your goal is to ' + task + '.');
+  if (ctxParts) lines.push('Context: ' + ctxParts + '.');
+  if (inputData)lines.push('Input: ' + inputData);
+  if (conParts) lines.push('Constraint: Please ensure the response is ' + conParts + '.');
+  if (fmtParts) lines.push('Format: Present your final answer as ' + fmtParts + '.');
+  window._prompt = lines.join('\n\n');
+
+  // HTML
+  var html = '';
+  if (role)     html += '<span class="out-lbl">Role: </span><span class="out-r">' + esc(role) + '.</span>\n\n';
+  if (task)     html += '<span class="out-lbl">Task: </span><span class="out-t">Your goal is to ' + esc(task) + '.</span>\n\n';
+  if (ctxParts) html += '<span class="out-lbl">Context: </span><span class="out-c">' + esc(ctxParts) + '.</span>\n\n';
+  if (inputData)html += '<span class="out-lbl">Input: </span><span class="out-i">' + esc(inputData) + '</span>\n\n';
+  if (conParts) html += '<span class="out-lbl">Constraint: </span><span class="out-k">Please ensure the response is ' + esc(conParts) + '.</span>\n\n';
+  if (fmtParts) html += '<span class="out-lbl">Format: </span><span class="out-f">Present your final answer as ' + esc(fmtParts) + '.</span>';
+  document.getElementById('prompt-output').innerHTML = html.trim();
+
+  // Scores
+  var s1 = role     ? (role.length > 20 ? 90 : 60)      : 8;
+  var s2 = task     ? (task.length > 12 ? 90 : 60)      : 8;
+  var s3 = ctxParts ? (ctxParts.length > 20 ? 90 : 55)  : 8;
+  var s4 = inputData? (inputData.length > 10 ? 90 : 55) : 8;
+  var s5 = conParts ? (conParts.length > 10 ? 90 : 55)  : 8;
+  var s6 = fmtParts ? (fmtParts.length > 8 ? 90 : 55)   : 8;
+  setBar(1, s1); setBar(2, s2); setBar(3, s3);
+  setBar(4, s4); setBar(5, s5); setBar(6, s6);
+
+  var total = s1 + s2 + s3 + s4 + s5 + s6;
+  var avg = Math.round(total / 6);
+  var badge = document.getElementById('strength-badge');
+  if (avg >= 75) {
+    badge.innerHTML = '<span class="strength-badge sb-strong">&#9733; Strong Prompt — ' + avg + '% complete</span>';
+  } else if (avg >= 45) {
+    badge.innerHTML = '<span class="strength-badge sb-good">&#9651; Good Prompt — ' + avg + '% complete &mdash; consider adding more detail</span>';
+  } else {
+    badge.innerHTML = '<span class="strength-badge sb-weak">&#9675; Basic Prompt — ' + avg + '% complete &mdash; add more components for better results</span>';
+  }
+
+  document.getElementById('output-section').classList.add('visible');
+  document.getElementById('improve-tip').style.display = 'none';
+  document.getElementById('copy-msg').classList.remove('show');
+}
+
+function esc(t) {
+  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function setBar(k, p) {
+  document.getElementById('b' + k).style.width = p + '%';
+  document.getElementById('pct' + k).textContent = p + '%';
+}
+
+function copyPrompt() {
+  if (!window._prompt) return;
+  try {
+    navigator.clipboard.writeText(window._prompt).then(showCopied, fallbackCopy);
+  } catch(e) { fallbackCopy(); }
+}
+function fallbackCopy() {
+  var ta = document.createElement('textarea');
+  ta.value = window._prompt;
+  ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try { document.execCommand('copy'); showCopied(); } catch(e) {}
+  document.body.removeChild(ta);
+}
+function showCopied() {
+  var el = document.getElementById('copy-msg');
+  el.classList.add('show');
+  setTimeout(function() { el.classList.remove('show'); }, 2500);
+}
+
+var tips = [
+  "Tip: The more specific your Role, the better. Instead of 'teacher', try 'experienced high school science teacher who uses real-world analogies'.",
+  "Tip: Combine Task + subject tightly. 'Summarise the key arguments in the following article' is stronger than just 'Summarise'.",
+  "Tip: Use your Context to tell the AI what to AVOID as well as what to include — e.g. 'Do not assume prior knowledge'.",
+  "Tip: Use placeholders like [Paste text here] in your Input field to make your template reusable for multiple pieces of content.",
+  "Tip: Add a negative constraint — 'Avoid bullet points', 'No jargon', 'Do not give personal medical advice' — to sharpen the output.",
+  "Tip: Pair your Format with a length: 'a bulleted list with no more than 6 points, each under 15 words' gives very precise results.",
+  "Tip: If you want a specific style, name a reference in your Role — e.g. 'Write in a style similar to a BBC news article'.",
+  "Tip: For best results, fill all 6 components. Each one you leave blank reduces the precision of the AI's response."
+];
+var tipIdx = 0;
+function showTip() {
+  var el = document.getElementById('improve-tip');
+  el.textContent = tips[tipIdx % tips.length];
+  el.style.display = 'block';
+  tipIdx++;
+}
+
+function clearAll() {
+  var selects = ['role-select','task-select','ctx-audience','constraint-tone','constraint-length','format-select'];
+  var inputs  = ['role-custom','task-topic','ctx-purpose','ctx-extra','input-data','constraint-extra','format-extra'];
+  selects.forEach(function(id) { document.getElementById(id).value = ''; });
+  inputs.forEach(function(id)  { document.getElementById(id).value = ''; });
+  document.getElementById('output-section').classList.remove('visible');
+  document.getElementById('improve-tip').style.display = 'none';
+  window._prompt = '';
+}
+</script>
+</body>
+</html>
